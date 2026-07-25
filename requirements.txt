@@ -1,9 +1,0 @@
-# Mirrors backend/requirements.txt. This copy exists at the repo root because
-# Vercel's Python builder looks for requirements.txt at the project root, not
-# inside backend/. Local dev still uses backend/requirements.txt directly.
-fastapi==0.111.0
-uvicorn[standard]==0.29.0
-httpx==0.27.0
-python-dotenv==1.0.1
-python-multipart==0.0.9
-pydantic-settings==2.3.4
