@@ -158,14 +158,15 @@ export default function ImageCounter() {
 
       if (m.source === "ai" && m.confidence && scale > 0.4) {
         const confFs = Math.max(8, Math.round(r * 0.6));
+        const confText = `${(m.confidence * 100).toFixed(1)}%`;
         ctx.font = `500 ${confFs}px Inter, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
         ctx.lineWidth = 2;
         ctx.strokeStyle = "rgba(0,0,0,0.5)";
-        ctx.strokeText(`${Math.round(m.confidence * 100)}%`, sx, sy - r - 2);
+        ctx.strokeText(confText, sx, sy - r - 2);
         ctx.fillStyle = "rgba(255,255,255,0.9)";
-        ctx.fillText(`${Math.round(m.confidence * 100)}%`, sx, sy - r - 2);
+        ctx.fillText(confText, sx, sy - r - 2);
       }
     });
   }, []);
