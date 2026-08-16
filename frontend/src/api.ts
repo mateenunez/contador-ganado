@@ -1,6 +1,10 @@
 import type { DetectResponse, HealthResponse } from './types';
 
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+const DEFAULT_MAX_UPLOAD_MB = 5;
+const MAX_UPLOAD_BYTES = Math.max(
+  1,
+  Number(import.meta.env.VITE_MAX_UPLOAD_MB ?? DEFAULT_MAX_UPLOAD_MB) * 1024 * 1024,
+);
 
 async function compressImageForUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): Promise<File> {
   if (file.size <= maxBytes || !file.type.startsWith('image/')) {
@@ -18,11 +22,9 @@ async function compressImageForUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): 
     });
 
     const canvas = document.createElement('canvas');
-    const scaleSteps = [1, 0.9, 0.8, 0.7, 0.6, 0.5];
-    const qualitySteps = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3];
     let bestBlob: Blob | null = null;
 
-    for (const scale of scaleSteps) {
+    for (let scale = 1; scale >= 0.2; scale -= 0.1) {
       const width = Math.max(1, Math.round(image.naturalWidth * scale));
       const height = Math.max(1, Math.round(image.naturalHeight * scale));
 
@@ -37,7 +39,7 @@ async function compressImageForUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): 
       ctx.fillRect(0, 0, width, height);
       ctx.drawImage(image, 0, 0, width, height);
 
-      for (const quality of qualitySteps) {
+      for (let quality = 0.9; quality >= 0.2; quality -= 0.1) {
         const blob = await new Promise<Blob | null>((resolve) => {
           canvas.toBlob((candidate) => resolve(candidate), 'image/jpeg', quality);
         });
