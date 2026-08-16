@@ -23,7 +23,7 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env   # completá ROBOFLOW_API_KEY y ROBOFLOW_MODEL
-uvicorn app.main:app --port 8000 --reload
+uvicorn app.main:app --port 8080 --reload
 ```
 
 **Frontend** (en otra terminal):
@@ -34,5 +34,5 @@ npm install
 npm run dev
 ```
 
-Abrí `http://localhost:5173`. El backend queda en `http://127.0.0.1:8000`.
+Abrí `http://localhost:5173`. El backend queda en `http://127.0.0.1:8080`.
 

@@ -258,7 +258,14 @@ export default function ImageCounter() {
   const runDetection = useCallback(
     async (id: string, image: HTMLImageElement, file: File) => {
       setDetecting(true);
-      setStatus({ msg: "Enviando imagen a Roboflow…", type: "info" });
+
+      const needsCompression = file.size > 15 * 1024 * 1024;
+      setStatus({
+        msg: needsCompression
+          ? "Comprimiendo imagen para Roboflow…"
+          : "Enviando imagen a Roboflow…",
+        type: "info",
+      });
 
       try {
         const data = await detectCows(file);
