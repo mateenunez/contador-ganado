@@ -1,6 +1,6 @@
 import type { DetectResponse, HealthResponse } from './types';
 
-const DEFAULT_MAX_UPLOAD_MB = 5;
+const DEFAULT_MAX_UPLOAD_MB = 3;
 const MAX_UPLOAD_BYTES = Math.max(
   1,
   Number(import.meta.env.VITE_MAX_UPLOAD_MB ?? DEFAULT_MAX_UPLOAD_MB) * 1024 * 1024,
