@@ -11,6 +11,12 @@ async function compressImageForUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): 
     return file;
   }
 
+  console.info('[compressImageForUpload] original', {
+    name: file.name,
+    sizeBytes: file.size,
+    maxBytes,
+  });
+
   const imageUrl = URL.createObjectURL(file);
 
   try {
@@ -23,8 +29,12 @@ async function compressImageForUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): 
 
     const canvas = document.createElement('canvas');
     let bestBlob: Blob | null = null;
+    let bestSize = Number.POSITIVE_INFINITY;
 
-    for (let scale = 1; scale >= 0.2; scale -= 0.1) {
+    const scales = [1, 0.85, 0.7, 0.55, 0.4, 0.28, 0.18, 0.12];
+    const qualities = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.15, 0.1];
+
+    for (const scale of scales) {
       const width = Math.max(1, Math.round(image.naturalWidth * scale));
       const height = Math.max(1, Math.round(image.naturalHeight * scale));
 
@@ -39,7 +49,7 @@ async function compressImageForUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): 
       ctx.fillRect(0, 0, width, height);
       ctx.drawImage(image, 0, 0, width, height);
 
-      for (let quality = 0.9; quality >= 0.2; quality -= 0.1) {
+      for (const quality of qualities) {
         const blob = await new Promise<Blob | null>((resolve) => {
           canvas.toBlob((candidate) => resolve(candidate), 'image/jpeg', quality);
         });
@@ -47,23 +57,39 @@ async function compressImageForUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): 
         if (!blob) continue;
 
         if (blob.size <= maxBytes) {
-          return new File([blob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', {
+          const compressed = new File([blob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', {
             type: 'image/jpeg',
             lastModified: Date.now(),
           });
+
+          console.info('[compressImageForUpload] success', {
+            finalSize: blob.size,
+            scale,
+            quality,
+          });
+
+          return compressed;
         }
 
-        if (!bestBlob || blob.size < bestBlob.size) {
+        if (blob.size < bestSize) {
+          bestSize = blob.size;
           bestBlob = blob;
         }
       }
     }
 
     if (bestBlob) {
-      return new File([bestBlob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', {
+      const compressed = new File([bestBlob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', {
         type: 'image/jpeg',
         lastModified: Date.now(),
       });
+
+      console.warn('[compressImageForUpload] fallback used', {
+        finalSize: bestBlob.size,
+        maxBytes,
+      });
+
+      return compressed;
     }
 
     return file;
@@ -80,6 +106,13 @@ export async function fetchHealth(): Promise<HealthResponse> {
 
 export async function detectCows(file: File): Promise<DetectResponse> {
   const uploadFile = await compressImageForUpload(file, MAX_UPLOAD_BYTES);
+
+  console.info('[detectCows] sending upload', {
+    original: file.size,
+    final: uploadFile.size,
+    name: uploadFile.name,
+  });
+
   const formData = new FormData();
   formData.append('file', uploadFile);
 
