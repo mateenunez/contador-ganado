@@ -259,7 +259,7 @@ export default function ImageCounter() {
     async (id: string, image: HTMLImageElement, file: File) => {
       setDetecting(true);
 
-      const needsCompression = file.size > 15 * 1024 * 1024;
+      const needsCompression = file.size > 10 * 1024 * 1024;
       setStatus({
         msg: needsCompression
           ? "Comprimiendo imagen para Roboflow…"
